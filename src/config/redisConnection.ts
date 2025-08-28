@@ -1,21 +1,26 @@
-import { createClient } from "redis";
+import Redis from "ioredis";
 
-const redisClient = createClient({
-  socket: {
-    host: "localhost", // Change to Redis container name if using Docker
-    port: 6379,
-  },
-  // password: "your_secure_password", // Remove if no password is set
-});
+let redisClient: Redis | null = null;
 
-redisClient.on("connect", () => {
-  console.log("✅ Connected to Redis");
-});
+const connectRedis = () => {
+  if (!redisClient) {
+    redisClient = new Redis({
+      host: "localhost", // Use "redis-secure" if inside a Docker network
+      port: 6379, // Ensure this matches the exposed port
+      password: "your_secure_password", // Redis password set in Docker
+      db: 0, // Select Redis database (0 is default)
+    });
 
-redisClient.on("error", (err) => {
-  console.error("❌ Redis error: ", err);
-});
+    redisClient.on("connect", () => {
+      console.log("✅ Connected to Redis");
+    });
 
-redisClient.connect().catch(console.error);
+    redisClient.on("error", (err: any) => {
+      console.error("❌ Redis error: ", err);
+    });
+  }
 
-export default redisClient;
+  return redisClient;
+};
+
+export default connectRedis;

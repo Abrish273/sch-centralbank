@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import asyncHandler from "../middleware/asyncHandler";
+import speakeasy from "speakeasy";
+import qrCode from "qrcode";
 import {
   formatPhoneNumber,
   generateTenDigitNumber,
@@ -9,6 +11,7 @@ import { hashpassword } from "../util/hashpassword.utils";
 import mongoose from "mongoose";
 import { seedAdminService } from "../service/seedAuth.service";
 import { LogConsole } from "../util/log.utils";
+import { updateCentralBankUserDal } from "../dal/centralbank.dal";
 
 const healthcheck = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
@@ -72,12 +75,119 @@ const seedSuAdmin = asyncHandler(async (req: Request, res: Response): Promise<an
 
 const login = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
+    console.log("the req.user is: ", (req as any).user);
+    console.log("the session is: ", (req as any).session);
+    if ((req as any).user.login.isMfaActive) {
+      console.log("==== here in the check mfa ====", (req as any).user);
+      return res.status(200).json({
+        username: (req as any).user.fullName,
+        isMfaActive: (req as any).user.login.isMfaActive,
+      });
+    } else {
+      console.log("here in the check user first time...");
+      return res.status(200).json({
+        username: (req as any).user.fullName,
+        isMfaActive: (req as any).user.login.isMfaActive,
+      });
+    }
+  }
+);
+
+const setupMfa = asyncHandler(
+  async (req: Request, res: Response): Promise<any> => {
+    console.log("the req.user is: ", (req as any).user);
+    const user = (req as any).user;
+    console.log("the user is in the set up mmmmm: ", user);
+    try {
+      console.log("the req.user is: ", req.user);
+      const user: any = req.user;
+      let secret = speakeasy.generateSecret();
+      console.log("the secret object is: ", secret);
+      const data = {
+        "login.twoFactorSecret": secret.base32,
+        "login.isMfaActive": true,
+      };
+      updateCentralBankUserDal(user._id, data);
+      const url = speakeasy.otpauthURL({
+        secret: secret.base32,
+        label: user.fullName,
+        issuer: "www.wallet.com",
+        encoding: "base32",
+      });
+      const qrImageUrl = await qrCode.toDataURL(url);
+      return res.status(200).json({
+        secret: secret.base32,
+        qrCode: qrImageUrl,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "error setting up 2fa", message: error });
+    }
+  }
+);
+
+const verifyMfa = asyncHandler(
+  async (req: Request, res: Response): Promise<any> => {
+    console.log("=== HERE IN THE VERIFY MFA ===");
+    const { token } = req.body; // token means the otp
+    const user: any = req.user;
+    console.log("--- user =-==", user);
+    const verified = speakeasy.totp.verify({
+      secret: user.login.twoFactorSecret,
+      encoding: "base32",
+      token,
+    });
+    console.log("--- verified ---", verified);
+    if (verified) {
+      const response: any = await getPermissionsService(user);
+      return res.status(200).json(response);
+    } else {
+      res.status(401).json({ message: "Invalid 2FA token." });
+    }
+  }
+);
+
+
+const logout = asyncHandler(
+  async (req: Request, res: Response): Promise<any> => {
+    // deleteData(id); // of the redis when the user logs out.
+  }
+);
+
+const reset2FA = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const user = (req as any).user;
+    const data = {
+      "login.twoFactorSecret": "",
+      "login.isMfaActive": false,
+    };
+    const updateUser = await updateSchoolUserDal(user._id, data);
+    if (updateUser.success) {
+      return res
+        .status(200)
+        .json({ message: "2FA reset successfully", success: true });
+    } else {
+      res.status(500).json({
+        message: "something went wrong try again later.",
+        error: "Error in resetting 2FA",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: "something went wrong try again later.",
+      error: `Error in resetting 2FA ${error}`,
+    });
+  }
+};
+
+const sampleTestFunction = asyncHandler(
+  async (req: Request, res: Response): Promise<any> => {
     return res.status(200).json({
       success: true,
-      status: "OK",
-      message: "login endpoint",
+      message: "school ms is healthy and up.",
+      data: (req as any).user,
     });
   }
 );
+
 
 export default { healthcheck, seedSuAdmin, login };

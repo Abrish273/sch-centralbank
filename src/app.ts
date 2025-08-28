@@ -136,7 +136,7 @@ const initApp = async () => {
     global._CONFIG = _CONFIG;
     mongoDB.connect();
     // connectKafkaProducer();
-    seedSuperAdmin();
+    // seedSuperAdmin();
     // await populatePermissions();
     app.listen(_CONFIG.CENTRAL_SCH_PORT, function connectionListener() {
       console.log(

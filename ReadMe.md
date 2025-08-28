@@ -246,4 +246,5 @@ curl --location --request GET 'url/v1.0/schpay/api/central/auth/seed/superadmin'
 - used to seed the super admin manually if not working
 
 
-// on sanitize password input problem
+// send OTP && verify OTP 
+// 

@@ -6,8 +6,13 @@ const corsOptions: CorsOptions = {
     origin: string | undefined,
     callback: (err: Error | null, allow?: boolean) => void
   ) => {
+    console.log(
+      "origin",
+      allowedOrigins.indexOf(origin!) !== -1 ||
+      process.env.NODE_ENV !== "production"
+    );
     if (
-      allowedOrigins.indexOf(origin!) !== -1 || process.env.NODE_ENV === "development"
+      allowedOrigins.indexOf(origin!) !== -1 || process.env.NODE_ENV !== "production"
         ? !origin // for production to block remove the exclamation mark
         : origin
     ) {
