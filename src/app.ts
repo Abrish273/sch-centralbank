@@ -128,15 +128,15 @@ process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
   }
 });
 const initApp = async () => {
-  const hash = await hashpassword("P@$$w0rd1212")
-  console.log("hash ---", hash);
-  console.log("compare hash ---", await compareHashPassword("P@$$w0rd1212", hash));
+  // const hash = await hashpassword("P@ssw0rd1212")
+  // console.log("hash ---", hash);
+  // console.log("compare hash ---", await compareHashPassword("P@ssw0rd1212", hash));
   try {
     let _CONFIG: TopLevelConfig = await initConfig();
     global._CONFIG = _CONFIG;
     mongoDB.connect();
     // connectKafkaProducer();
-    // seedSuperAdmin();
+    seedSuperAdmin();
     // await populatePermissions();
     app.listen(_CONFIG.CENTRAL_SCH_PORT, function connectionListener() {
       console.log(

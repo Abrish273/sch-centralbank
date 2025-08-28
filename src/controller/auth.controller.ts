@@ -23,6 +23,7 @@ const healthcheck = asyncHandler(
 export const seedSuperAdmin = async (manualseed: boolean = false): Promise<any> => {
   LogConsole("=== HERE IN THE SUPER ADMIN ===");
   const _CONFIG = await initConfig();
+  console.log("password", _CONFIG.loginPassword)
   const hash = await hashpassword(_CONFIG.loginPassword);
 
   const adminDetails = {
