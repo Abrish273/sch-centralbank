@@ -2,11 +2,15 @@ import centralbankModel from "../model/centralbank.model";
 import AppError from "../util/appError";
 import { LogConsole } from "../util/log.utils";
 
-export const GetCentralBankUserDal = async (query: any, check: boolean = false) => {
+export const GetCentralBankUserDal = async (
+  query: any,
+  check: boolean = false
+) => {
   LogConsole("%%%%% QUERY %%%%%", query);
   let devError: object = {};
   try {
     const response = await centralbankModel.findOne(query);
+    console.log("response in get user dal===", response);
     if (response && (response !== null || response !== undefined)) {
       return response;
     } else {
@@ -160,7 +164,11 @@ export const CreateManyCentralBankUsersDal = async (queries: any[]) => {
   }
 };
 
-export const updateCentralBankUserDal = async (query: any, updates: any) => {
+export const updateCentralBankUserDal = async (
+  query: any,
+  updates: any,
+  retrn: boolean = false
+) => {
   let devError: object = {};
   try {
     LogConsole("query", query);
@@ -172,14 +180,18 @@ export const updateCentralBankUserDal = async (query: any, updates: any) => {
     if (response && (response !== null || response !== undefined)) {
       return response;
     } else {
-      throw new AppError(
-        {
-          success: false,
-          message: "something went wrong try again later",
-        },
-        400,
-        devError
-      );
+      if (retrn) {
+        return null;
+      } else {
+        throw new AppError(
+          {
+            success: false,
+            message: "something went wrong try again later",
+          },
+          400,
+          devError
+        );
+      }
     }
   } catch (error) {
     LogConsole("error dal", error.message);

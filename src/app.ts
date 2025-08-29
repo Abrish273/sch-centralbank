@@ -28,7 +28,6 @@ import { errorHandler } from "./util/errorHandler.utils";
 import router from "./routes";
 import { seedSuperAdmin } from "./controller/auth.controller";
 import { initializePassport } from "./config/passport-config";
-import { compareHashPassword, hashpassword } from "./util/hashpassword.utils";
 const RedisStore = require("connect-redis").RedisStore;
 
 dotenv.config();
@@ -127,10 +126,8 @@ process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
     process.exit(1);
   }
 });
+
 const initApp = async () => {
-  // const hash = await hashpassword("P@ssw0rd1212")
-  // console.log("hash ---", hash);
-  // console.log("compare hash ---", await compareHashPassword("P@ssw0rd1212", hash));
   try {
     let _CONFIG: TopLevelConfig = await initConfig();
     global._CONFIG = _CONFIG;

@@ -29,7 +29,7 @@ const centralbank = new Schema<ICentral>({
 
     // Multi-factor authentication (MFA)
     isMfaActive: { type: Boolean, required: true, default: false },
-    twoFactorSecret: { type: String, select: false }, // should be encrypted or stored in secure vault
+    twoFactorSecret: { type: String }, // should be encrypted or stored in secure vault
 
     // Brute-force protection
     loginAttemptCount: { type: Number, default: 0 },

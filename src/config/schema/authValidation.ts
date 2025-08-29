@@ -1,5 +1,12 @@
 import Joi from "joi";
-import { BoolValue, password, phonenumber, sourceapp, StringValidValues, stringValue } from "./commonValidations";
+import {
+  BoolValue,
+  password,
+  phonenumber,
+  sourceapp,
+  StringValidValues,
+  stringValue,
+} from "./commonValidations";
 
 export const centralbankSchema = Joi.object({
   userCode: stringValue("user code"),
@@ -30,4 +37,17 @@ export const centralloginSchema = Joi.object({
   sourceapp: sourceapp,
   phonenumber: phonenumber,
   password: password,
+});
+
+export const loginSchema = Joi.object({
+  sourceapp: sourceapp,
+  phonenumber: phonenumber,
+  password: password,
+});
+
+export const verifyOtpSchema = Joi.object({
+  sourceapp: sourceapp,
+  token: Joi.string()
+    .pattern(/^\d{6}$/) // Regex to allow exactly six digits
+    .required(),
 });

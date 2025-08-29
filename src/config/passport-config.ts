@@ -30,6 +30,7 @@ export const initializePassport = () => {
 
           LogConsole("=== query ===", query);
           const user = await findUser(query);
+          console.log("user found", user);
           const verifiedPassword: boolean = await compareHashPassword(
             password,
             user.login.loginPassword
@@ -37,7 +38,7 @@ export const initializePassport = () => {
           LogConsole("=== verified ===", verifiedPassword);
 
           if (verifiedPassword) {
-            if (user.login.isDefaultPassword) {
+            if (!user.login.isDefaultPassword) {
               throw new AppError(
                 {
                   requires: "force change password",
@@ -72,6 +73,7 @@ export const initializePassport = () => {
               if (!redisResponse.success) {
                 LogConsole("Error saving to Redis: ", redisResponse.message);
               }
+              console.log("---user---", user)
               return done(null, user);
             }
           } else {

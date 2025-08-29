@@ -1,3 +1,5 @@
+import { getPermissions } from "../dal/permissions.dal";
+import { setPermissionData } from "../dal/redis.dal";
 import AppError from "../util/appError";
 import { createToken } from "../util/authToken.utils";
 import { encryptData } from "../util/encryptData.util";
@@ -20,29 +22,48 @@ export const getPermissionsService = async (user: any): Promise<any> => {
         devError
       );
     } else {
-      const selectedFields = {
+      const FieldsRaw = {
         id: user._id,
-        fullname: user.fullName,
-        schoolcode: user.schoolCode,
-        schoolname: user.schoolName,
         usercode: user.userCode,
-        realm: user.realm,
-        role: user.role,
-        poolsource: user.poolSource,
-        phonenumber: user.contactDetails.phoneNumber,
+        fullname: user.fullName,
+        phonenumber: user.phoneNumber,
+      };
+
+      // Remove only null and undefined values
+      const Fields = Object.fromEntries(
+        Object.entries(FieldsRaw).filter(
+          ([, value]) => value !== null && value !== undefined
+        )
+      );
+      const selectedFieldsRaw = {
+        id: user._id,
+        usercode: user.userCode,
+        fullname: user.fullName,
+        phonenumber: user.phoneNumber,
+        schoolname: user.schoolName,
+        schoolcode: user.schoolCode,
         r001: user.realm, // realm
         r002: user.role, // role
         r003: permissions, // permissions
       };
+      const selectedFields = Object.fromEntries(
+        Object.entries(selectedFieldsRaw).filter(
+          ([, value]) => value !== null && value !== undefined
+        )
+      );
 
-      const encryptedD = encryptData(selectedFields);
-      const hash = hashData(selectedFields);
+      console.log("selectedFields", selectedFields);
+
+      const encrypted = await encryptData(selectedFields);
+      const hash = await hashData(selectedFields);
       const redKey = generateUUIDRandomNumber();
       const data = {
-        encryptedD,
+        ...Fields,
+        encrypted,
         dtx: hash,
         redKey,
       };
+      console.log("--- data to create token ---", data);
       const token = await createToken(data);
       console.log("--- token ---", token);
       const expirationTime = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
