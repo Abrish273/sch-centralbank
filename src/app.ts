@@ -28,6 +28,7 @@ import { errorHandler } from "./util/errorHandler.utils";
 import router from "./routes";
 import { seedSuperAdmin } from "./controller/auth.controller";
 import { initializePassport } from "./config/passport-config";
+import { authenticateToken } from "./middleware/authenticate";
 const RedisStore = require("connect-redis").RedisStore;
 
 dotenv.config();
@@ -92,16 +93,39 @@ app.use(function (req, res, next) {
   next();
 });
 
-// app.use(sanitizeInputMiddleware);
+app.use(sanitizeInputMiddleware);
 
-// app.use(
-//   authenticateToken.unless({
-//     path: [
-//       { url: "/v1.0/schpay/api/bank/auth/healthcheck", methods: ["GET"] },
-//       { url: "/v1.0/schpay/api/central/auth/bank/login", methods: ["POST"] },
-//     ],
-//   })
-// );
+app.use(
+  authenticateToken.unless({
+    path: [
+      { url: "/v1.0/schpay/api/central/auth/healthcheck", methods: ["GET"] },
+      {
+        url: "/v1.0/schpay/api/central/auth/seed/superadmin",
+        methods: ["GET"],
+      },
+      {
+        url: "/v1.0/schpay/api/central/auth/bank/login",
+        methods: ["POST"],
+      },
+      {
+        url: "/v1.0/schpay/api/central/auth/setup/mfa",
+        methods: ["POST"],
+      },
+      {
+        url: "/v1.0/schpay/api/central/auth/setup/mfa",
+        methods: ["POST"],
+      },
+      {
+        url: "/v1.0/schpay/api/central/auth/verify/mfa",
+        methods: ["POST"],
+      },
+      {
+        url: "/v1.0/schpay/api/central/setting/change/password",
+        methods: ["POST"],
+      }
+    ],
+  })
+);
 
 router(app);
 

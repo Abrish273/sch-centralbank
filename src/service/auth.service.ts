@@ -40,8 +40,11 @@ export const getPermissionsService = async (user: any): Promise<any> => {
         usercode: user.userCode,
         fullname: user.fullName,
         phonenumber: user.phoneNumber,
-        schoolname: user.schoolName,
-        schoolcode: user.schoolCode,
+        accountlevel: user.accountLevel ?? null,
+        schoolname: user.schoolName ?? null,
+        schoolcode: user.schoolCode ?? null,
+        branchname: user.branchname ?? null,
+        branchcode: user.branchcode ?? null,
         r001: user.realm, // realm
         r002: user.role, // role
         r003: permissions, // permissions
@@ -56,48 +59,16 @@ export const getPermissionsService = async (user: any): Promise<any> => {
 
       const encrypted = await encryptData(selectedFields);
       const hash = await hashData(selectedFields);
-      const redKey = generateUUIDRandomNumber();
       const data = {
         ...Fields,
-        encrypted,
+        enc: encrypted,
         dtx: hash,
-        redKey,
       };
       console.log("--- data to create token ---", data);
       const token = await createToken(data);
       console.log("--- token ---", token);
-      const expirationTime = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
 
-      const respondData = {
-        token: token,
-        tokenExpiration: expirationTime,
-        extensionCount: 0,
-      };
-
-      console.log("--- response ---", respondData);
-      const d: any = await setPermissionData(redKey, respondData);
-      console.log("--- d ---", d);
-
-      if (d.success) {
-        const dx = {
-          message: "2FA successfully login.",
-          token: respondData.token,
-          key: redKey,
-        };
-        return dx;
-      } else {
-        const devError = {
-          status: 500,
-          response: "Something went wrong. Try again later. - service",
-          error: d,
-        };
-
-        throw new AppError(
-          { message: "Something went wrong. Try again later." },
-          500,
-          devError
-        );
-      }
+      return token;
     }
   } catch (error) {
     console.log("error in build response token catch --", error.message);

@@ -44,5 +44,7 @@ router.post(
 );
 
 router.post("/reset/mfa", isAuthenticated, authController.reset2FA);
+router.post("/test", authController.sampleTestFunction);
+
 
 export default router;

@@ -148,7 +148,7 @@ const verifyMfa = asyncHandler(
     console.log("--- verified ---", verified);
     if (verified) {
       const response: any = await getPermissionsService(user);
-      return res.status(200).json(response);
+      return res.status(200).json({ success: true, token: response });
     } else {
       res.status(401).json({
         message: "Invalid 2FA token.",
@@ -184,6 +184,7 @@ const reset2FA = asyncHandler(
     }
   }
 );
+
 const logout = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
     // deleteData(id); // of the redis when the user logs out.
@@ -192,11 +193,17 @@ const logout = asyncHandler(
 
 const sampleTestFunction = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
+    if(process.env.NODE_ENV !== 'production'){
     return res.status(200).json({
       success: true,
       message: "school ms is healthy and up.",
       data: (req as any).user,
-    });
+    });} else {
+    return res.status(200).json({
+      success: true,
+      message: "service is up"
+    })
+    }
   }
 );
 
@@ -208,4 +215,5 @@ export default {
   verifyMfa,
   logout,
   reset2FA,
+  sampleTestFunction,
 };

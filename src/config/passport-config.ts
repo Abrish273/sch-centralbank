@@ -10,6 +10,7 @@ import AppError from "../util/appError";
 import { compareHashPassword } from "../util/hashpassword.utils";
 import moment from "moment-timezone";
 import { getData, setData } from "../dal/redis.dal";
+import { otpFor } from "../util/constants";
 
 export const initializePassport = () => {
   passport.use(
@@ -38,11 +39,12 @@ export const initializePassport = () => {
           LogConsole("=== verified ===", verifiedPassword);
 
           if (verifiedPassword) {
-            if (!user.login.isDefaultPassword) {
+            if (user.login.isDefaultPassword) {
               throw new AppError(
                 {
                   requires: "force change password",
                   next: "/v1.0/schpay/api/otp/send/otp",
+                  otpFor: otpFor.forceChangePassword,
                   message: "change your password",
                 },
                 400,
@@ -73,7 +75,7 @@ export const initializePassport = () => {
               if (!redisResponse.success) {
                 LogConsole("Error saving to Redis: ", redisResponse.message);
               }
-              console.log("---user---", user)
+              console.log("---user---", user);
               return done(null, user);
             }
           } else {
@@ -94,7 +96,7 @@ export const initializePassport = () => {
 
   passport.serializeUser(async (user: any, done: any) => {
     LogConsole("=== SERIALIZE USER ===", user.id);
-    
+
     const redisResponse = await setData(user);
 
     if (redisResponse.success) {

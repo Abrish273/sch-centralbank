@@ -34,10 +34,16 @@ export const generateRandomIdwithPrefix = (prefix: string): string => {
   return `${prefix.toUpperCase()}${formattedSeconds}${formattedMicroseconds}${randomPart}`;
 };
 
-export const generateRandomNumbers = () => {
-  // Generate a random number between 0 and 999999
-  const randomId = Math.floor(100000 + Math.random() * 900000);
-  return randomId.toString();
+export const generateRandomNumber = (length: number): number => {
+  if (length <= 0) {
+    throw new Error("Length must be greater than 0");
+  }
+
+  // Ensure the number has the correct number of digits
+  const min = Math.pow(10, length - 1); // smallest number with that length
+  const max = Math.pow(10, length) - 1; // largest number with that length
+
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
 export const generateTenDigitNumber = () => {
